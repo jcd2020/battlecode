@@ -4,14 +4,13 @@ import battlecode.common.*;
 public strictfp class RobotPlayer 
 {
     static RobotController rc;
-
+    
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
      * If this method returns, the robot dies!
     **/
     @SuppressWarnings("unused")
-    public static void run(RobotController rc) throws GameActionException 
-    {
+    public static void run(RobotController rc) throws GameActionException {
 
         // This is the RobotController object. You use it to perform actions from this robot,
         // and to get information on its current status.
@@ -35,7 +34,8 @@ public strictfp class RobotPlayer
         }
 	}
 
-    static void runArchon() throws GameActionException {
+    static void runArchon() throws GameActionException 
+    {
         System.out.println("I'm an archon!");
 
         // The code you want your robot to perform every round should be in this loop
@@ -276,5 +276,36 @@ public strictfp class RobotPlayer
         float perpendicularDist = (float)Math.abs(distToRobot * Math.sin(theta)); // soh cah toa :)
 
         return (perpendicularDist <= rc.getType().bodyRadius);
+    }
+    
+    
+    public class Tree implements Comparable<Tree>
+    {
+    	MapLocation loc;
+    	
+    	double health;
+    	double id;
+    	double hasRobot;
+    	int containedBullets;
+		@Override
+		public int compareTo(Tree o) {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+    	
+    }
+    
+    public class EnemyRobot implements Comparable<EnemyRobot>
+    {
+    	MapLocation loc;
+    	double health;
+    	int id;
+    	RobotType type;
+		@Override
+		public int compareTo(EnemyRobot o)
+		{
+			return this.type.compareTo(o.type);
+		}
+    	
     }
 }
