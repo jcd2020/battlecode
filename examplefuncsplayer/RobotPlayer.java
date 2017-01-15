@@ -1,9 +1,17 @@
 package examplefuncsplayer;
+import java.util.LinkedHashSet;
+
 import battlecode.common.*;
 
 public strictfp class RobotPlayer 
 {
     static RobotController rc;
+    
+    LinkedHashSet<Tree> neutralTrees = new LinkedHashSet<>();
+    LinkedHashSet<Tree> friendlyTrees = new LinkedHashSet<>();
+    LinkedHashSet<EnemyRobot> enemies = new LinkedHashSet<>();
+    
+    
     
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
@@ -285,12 +293,23 @@ public strictfp class RobotPlayer
     	
     	double health;
     	double id;
-    	double hasRobot;
+    	RobotType robotType;
     	int containedBullets;
+    	
+    	public Tree(TreeInfo t)
+    	{
+    		this.health = t.health;
+    		this.id = t.ID;
+    		this.robotType = t.getContainedRobot();
+    		this.containedBullets = t.getContainedBullets();
+    	}
+    	
+    	
+    	
 		@Override
-		public int compareTo(Tree o) {
-			// TODO Auto-generated method stub
-			return 0;
+		public int compareTo(Tree o) 
+		{
+			return Integer.compare(containedBullets + robotType.bulletCost, o.containedBullets + o.robotType.bulletCost);
 		}
     	
     }
