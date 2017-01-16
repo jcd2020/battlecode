@@ -58,13 +58,13 @@ public class Awareness {
 	}
 	
 	//BC 6
-	static double bulletCount(){
-		return rc.getTeamBullets();
+	static int bulletCount(){
+		return (int)rc.getTeamBullets();
 	}
 	
 	//BC 7 ~ Only call in the runArchon Method
-	static double friendlyArchonHealth(){
-		return rc.getHealth();
+	static int friendlyArchonHealth(){
+		return (int)rc.getHealth();
 	}
 	
 	//BC 8

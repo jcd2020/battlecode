@@ -109,9 +109,29 @@ public class Movement {
     	}
     }
     
-    static boolean scoutMotion(int scoutType){
-    	//fixed pattern on 
+    static boolean scoutMotion(int scoutType) throws GameActionException{
+    	if(scoutType == 0){
+    		if(tryMove(Direction.getEast().rotateLeftRads((float)Math.PI), 5, 3)){
+    			return true;
+    		}
+    		else if(tryMove(Direction.getWest().rotateLeftRads((float)Math.PI), 5, 3)){
+    			return true;
+    		}
+    		else{return false;}
+    				
+    	}
+    	else{
+    		if(tryMove(Direction.getEast().rotateRightRads((float)Math.PI), 5, 3)){
+    			return true;
+    		}
+    		else if(tryMove(Direction.getWest().rotateRightRads((float)Math.PI), 5, 3)){
+    			return true;
+    		}
+    		else{return false;}
+    				
+    	}
     }
+     
     
   
 }
