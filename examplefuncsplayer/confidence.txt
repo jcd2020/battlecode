@@ -3,16 +3,19 @@ Fleeing v. Normal 100% Personal
 
 
 Global confidence -
-total troop count
-total enemy troop count
+total unit count
+total enemy unit count fudged by 1.5 - t/1500
 our tank and soldier count
-enemy tank and soldier count
-value of enemy units
-total HP of enemy trees
+enemy tank and soldier count fudged by 1.5 - t/1500
+value of our units
+value of enemy units fudged by 1.5 - t/1500
+total HP of enemy trees fudged by 1.5 - t/1500
 victory points
 our archon health
 their archon health
+bullet count
 
+[attacking units*1000 + bullets]*our archon health/(non attacking units*500 + value*250  + victory points * their archon health)
 
 Personal confidence -
 health
@@ -21,3 +24,9 @@ friendlys within 7 units
 # stronger enemies within 7 units
 # weaker enemies within 7 units
 bullet count
+
+(bullets/5 + health*attack_power)*FACTORS
+
+FACTORS:
+
+[(health*attack_power of all nearby friendlys  + 1) / (health*attack_power enemies + 1)]^(.5)
