@@ -1,0 +1,4 @@
+sense
+broadcast
+calculate confidence
+act (move and/or misc. behavior)

@@ -9,7 +9,10 @@ public strictfp class RobotPlayer {
     public static final Team myTeam = rc.getTeam();
     LinkedHashSet<Tree> neutralTrees = new LinkedHashSet<>();
     LinkedHashSet<Tree> friendlyTrees = new LinkedHashSet<>();
-    LinkedHashSet<EnemyRobot> enemies = new LinkedHashSet<>();
+    LinkedHashSet<Tree> enemyTrees = new LinkedHashSet<>();
+
+    LinkedHashSet<Robot> enemies = new LinkedHashSet<>();
+    LinkedHashSet<Robot> friendlies = new LinkedHashSet<>();
 
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
@@ -313,7 +316,7 @@ public strictfp class RobotPlayer {
     	
     }
     
-    public class EnemyRobot implements Comparable<EnemyRobot>
+    public class Robot implements Comparable<Robot>
     {
     	int id;
 		int health;
@@ -323,7 +326,7 @@ public strictfp class RobotPlayer {
 		
 		int totalVal;
 		
-		public EnemyRobot(int[] a)
+		public Robot(int[] a)
 		{
 			id = a[0];
 			health = a[1];
@@ -367,7 +370,7 @@ public strictfp class RobotPlayer {
 			
     	}
 		@Override
-		public int compareTo(EnemyRobot o)
+		public int compareTo(Robot o)
 		{
 			return Double.compare(this.getValue(), o.getValue());
 		}
