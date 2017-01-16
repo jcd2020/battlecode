@@ -1,0 +1,23 @@
+Attacking v. Defending 80% global confidence 20% personal
+Fleeing v. Normal 100% Personal
+
+
+Global confidence -
+total troop count
+total enemy troop count
+our tank and soldier count
+enemy tank and soldier count
+value of enemy units
+total HP of enemy trees
+victory points
+our archon health
+their archon health
+
+
+Personal confidence -
+health
+attack power
+friendlys within 7 units
+# stronger enemies within 7 units
+# weaker enemies within 7 unites
+bullet count
