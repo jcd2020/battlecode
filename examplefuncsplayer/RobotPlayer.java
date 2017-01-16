@@ -202,57 +202,7 @@ public strictfp class RobotPlayer
         return new Direction((float)Math.random() * 2 * (float)Math.PI);
     }
 
-    /**
-     * Attempts to move in a given direction, while avoiding small obstacles directly in the path.
-     *
-     * @param dir The intended direction of movement
-     * @return true if a move was performed
-     * @throws GameActionException
-     */
-    static boolean tryMove(Direction dir) throws GameActionException {
-        return tryMove(dir,20,3);
-    }
-
-    /**
-     * Attempts to move in a given direction, while avoiding small obstacles direction in the path.
-     *
-     * @param dir The intended direction of movement
-     * @param degreeOffset Spacing between checked directions (degrees)
-     * @param checksPerSide Number of extra directions checked on each side, if intended direction was unavailable
-     * @return true if a move was performed
-     * @throws GameActionException
-     */
-    static boolean tryMove(Direction dir, float degreeOffset, int checksPerSide) throws GameActionException {
-
-        // First, try intended direction
-        if (rc.canMove(dir)) {
-            rc.move(dir);
-            return true;
-        }
-
-        // Now try a bunch of similar angles
-        boolean moved = false;
-        int currentCheck = 1;
-
-        while(currentCheck<=checksPerSide) {
-            // Try the offset of the left side
-            if(rc.canMove(dir.rotateLeftDegrees(degreeOffset*currentCheck))) {
-                rc.move(dir.rotateLeftDegrees(degreeOffset*currentCheck));
-                return true;
-            }
-            // Try the offset on the right side
-            if(rc.canMove(dir.rotateRightDegrees(degreeOffset*currentCheck))) {
-                rc.move(dir.rotateRightDegrees(degreeOffset*currentCheck));
-                return true;
-            }
-            // No move performed, try slightly further
-            currentCheck++;
-        }
-
-        // A move never happened, so return false.
-        return false;
-    }
-
+    
     /**
      * A slightly more complicated example function, this returns true if the given bullet is on a collision
      * course with the current robot. Doesn't take into account objects between the bullet and this robot.
@@ -289,41 +239,140 @@ public strictfp class RobotPlayer
     
     public class Tree implements Comparable<Tree>
     {
-    	MapLocation loc;
+    	int id;
+		int health;
+		int maxHealth;
+		int robotType ;
+		int x;
+		int y;
+		int team;
+		int bulletsContained;
+		
+		int totalVal;
     	
-    	double health;
-    	double id;
-    	RobotType robotType;
-    	int containedBullets;
-    	
-    	public Tree(TreeInfo t)
+    	public Tree(int[] a)
     	{
-    		this.health = t.health;
-    		this.id = t.ID;
-    		this.robotType = t.getContainedRobot();
-    		this.containedBullets = t.getContainedBullets();
+    		this.id = a[0];
+    		this.health = a[1];
+    		this.maxHealth = a[2];
+    		this.robotType = a[3];
+    		this.x = a[4];
+    		this.y = a[5];
+    		this.team = a[6];
+    		this.bulletsContained = a[7];
+    		
+    		
+    		RobotType r = null;
+    		
+    		switch(robotType)
+    		{
+    			
+    			case 0:
+    				r = RobotType.ARCHON;
+    				break;
+    			case 1:
+    				r = RobotType.GARDENER;
+    			case 2:
+    				r = RobotType.LUMBERJACK;
+    			case 3:
+    				r = RobotType.SCOUT;
+    			case 4:
+    				r = RobotType.SOLDIER;
+    			case 5:
+    				r = RobotType.TANK;
+    			
+    			
+    		}
+    		totalVal = bulletsContained + r.bulletCost;
     	}
     	
     	
-    	
+    	double getValue()
+    	{
+    		MapLocation loc = rc.getLocation();
+			double dist = Math.sqrt(Math.pow(loc.x - this.x, 2) + Math.pow(loc.y - y, 2));
+			
+			//Heuristics to estimate the value of a tree to a robot
+			if(team == 2)
+			{
+				return totalVal / dist;
+			}
+			
+			if(team == rc.getTeam().ordinal())
+			{
+				return dist * maxHealth / health;
+			}
+			else
+			{
+				return health / dist;
+			}
+			
+    	}
 		@Override
 		public int compareTo(Tree o) 
 		{
-			return Integer.compare(containedBullets + robotType.bulletCost, o.containedBullets + o.robotType.bulletCost);
+			return Double.compare(this.getValue(), o.getValue());
 		}
     	
     }
     
     public class EnemyRobot implements Comparable<EnemyRobot>
     {
-    	MapLocation loc;
-    	double health;
     	int id;
-    	RobotType type;
+		int health;
+		int robotType;
+		int x;
+		int y;
+		
+		int totalVal;
+		
+		public EnemyRobot(int[] a)
+		{
+			id = a[0];
+			health = a[1];
+			robotType = a[2];
+			x = a[3];
+			y = a[4];
+			
+    		
+    		switch(robotType)
+    		{
+    			
+    			case 0:
+    				totalVal = 1000;
+    				break;
+    			case 1:
+    				totalVal = 300;
+    				break;
+    			case 2:
+    				totalVal = 150;
+    				break;
+    			case 3:
+    				totalVal = 100;
+    				break;
+    			case 4:
+    				totalVal = 200;
+    				break;
+    			case 5:
+    				totalVal = 300;
+    				break;
+    			
+    		}
+		}
+		
+		double getValue()
+    	{
+    		MapLocation loc = rc.getLocation();
+			double dist = Math.sqrt(Math.pow(loc.x - this.x, 2) + Math.pow(loc.y - y, 2));
+			
+			return totalVal / (health * dist);
+			
+			
+    	}
 		@Override
 		public int compareTo(EnemyRobot o)
 		{
-			return this.type.compareTo(o.type);
+			return Double.compare(this.getValue(), o.getValue());
 		}
     	
     }

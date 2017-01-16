@@ -14,7 +14,7 @@ public class Awareness {
 	static RobotInfo[] enemiesInSight(){
 		Team myTeam = rc.getTeam();
 		
-		if(myTeam == Team.A){
+		if(myTeam.equals(Team.A)){
 			
 			RobotInfo[] enemyInfo = rc.senseNearbyRobots(-1, Team.B);
 			return enemyInfo;	
@@ -35,7 +35,7 @@ public class Awareness {
 	static TreeInfo[] enemyTreesInSight(){
 		Team myTeam = rc.getTeam();
 		
-		if(myTeam == Team.A){
+		if(myTeam.equals(Team.A)){
 			
 			TreeInfo[] enTreeInfo = rc.senseNearbyTrees(-1, Team.B);
 			return enTreeInfo;
@@ -72,7 +72,7 @@ public class Awareness {
 	static int enemyArchonHealth(){
 		Team myTeam = rc.getTeam();
 		
-		if(myTeam == Team.A){
+		if(myTeam.equals(Team.A)){
 			RobotInfo[] infoArray = rc.senseNearbyRobots(-1, Team.B);
 			for(RobotInfo info : infoArray){
 				if(info.getType() == RobotType.ARCHON){
@@ -90,6 +90,88 @@ public class Awareness {
 			}
 			return -1;
 		}
+	}
+	
+	static int encodeTreeMessage(TreeInfo t)
+	{
+		int id = t.ID;
+		int health = (int) t.health;
+		int maxHealth = (int) t.maxHealth;
+		int robotType = (int) convertEnumToInt(t.getContainedRobot());
+		int x = (int)t.location.x;
+		int y = (int)t.location.y;
+		int bulletsContained = t.containedBullets;
+		int team = t.getTeam().ordinal();
+		
+		String message = convertIntToBinaryString(id, 15) + convertIntToBinaryString(health, 11) + convertIntToBinaryString(maxHealth, 11)+ convertIntToBinaryString(robotType, 3) + convertIntToBinaryString(x, 7) + convertIntToBinaryString(y, 7) + convertIntToBinaryString(team, 2) + convertIntToBinaryString(bulletsContained, 10);
+		
+		return Integer.parseInt(message, 2);
+		
+	}
+	
+	static int[] decodeTreeMessage(int m)
+	{
+		String message = convertIntToBinaryString(m, 64);
+		
+		int id = Integer.parseInt(message.substring(0, 15), 2);
+		int health = Integer.parseInt(message.substring(15, 26), 2);
+		int maxHealth = Integer.parseInt(message.substring(26, 37), 2);
+		int robotType = Integer.parseInt(message.substring(37, 40), 2);
+		int x = Integer.parseInt(message.substring(40, 47), 2);
+		int y = Integer.parseInt(message.substring(47, 54), 2);
+		int team = Integer.parseInt(message.substring(54, 56), 2);
+		int bulletsContained = Integer.parseInt(message.substring(56, 64), 2);
+		
+		return new int[]{id, health, maxHealth, robotType, x, y, team, bulletsContained};
+	}
+	
+	static int encodeEnemyMessage(RobotInfo r)
+	{
+		int id = r.ID;
+		int health = (int) r.health;
+		int x = (int)r.location.x;
+		int y = (int)r.location.y;
+		int robotType = convertEnumToInt(r.type);
+		
+		String message = convertIntToBinaryString(id, 15) + convertIntToBinaryString(health, 11) + convertIntToBinaryString(robotType, 3) + convertIntToBinaryString(x, 7) + convertIntToBinaryString(y, 7);
+		
+		return Integer.parseInt(message, 2);
+		
+	}
+	static int[] decodeEnemyMessage(int m)
+	{
+		String message = convertIntToBinaryString(m, 43);
+		
+		int id = Integer.parseInt(message.substring(0, 15), 2);
+		int health = Integer.parseInt(message.substring(15, 26), 2);
+		int robotType = Integer.parseInt(message.substring(26, 29), 2);
+		int x = Integer.parseInt(message.substring(29, 36), 2);
+		int y = Integer.parseInt(message.substring(36, 43), 2);
+		
+		return new int[]{id, health, robotType, x, y};
+	}
+
+	private static int convertEnumToInt(RobotType containedRobot) 
+	{
+		if(containedRobot == null)
+		{
+			return 7;
+		}
+		else
+		{
+			return containedRobot.ordinal();
+
+		}
+		
+	}
+	
+	
+	private static String convertIntToBinaryString(int number, int numBits)
+	{
+		String binaryString = Integer.toBinaryString(number);
+		binaryString = "00000000000000000000000000000000000000000000000000000000" + binaryString;
+		binaryString = binaryString.substring(binaryString.length() - numBits);
+		return binaryString;
 	}
 }
 
