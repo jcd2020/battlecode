@@ -19,5 +19,5 @@ health
 attack power
 friendlys within 7 units
 # stronger enemies within 7 units
-# weaker enemies within 7 unites
+# weaker enemies within 7 units
 bullet count
