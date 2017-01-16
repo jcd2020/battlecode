@@ -3,16 +3,14 @@ import java.util.LinkedHashSet;
 
 import battlecode.common.*;
 
-public strictfp class RobotPlayer 
-{
-    static RobotController rc;
-    
+public strictfp class RobotPlayer {
+	
+	static RobotController rc;
+    public static final Team myTeam = rc.getTeam();
     LinkedHashSet<Tree> neutralTrees = new LinkedHashSet<>();
     LinkedHashSet<Tree> friendlyTrees = new LinkedHashSet<>();
     LinkedHashSet<EnemyRobot> enemies = new LinkedHashSet<>();
-    
-    
-    
+
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
      * If this method returns, the robot dies!
@@ -42,8 +40,7 @@ public strictfp class RobotPlayer
         }
 	}
 
-    static void runArchon() throws GameActionException 
-    {
+    static void runArchon() throws GameActionException {
         System.out.println("I'm an archon!");
 
         // The code you want your robot to perform every round should be in this loop
@@ -51,7 +48,7 @@ public strictfp class RobotPlayer
 
             // Try/catch blocks stop unhandled exceptions, which cause your robot to explode
             try {
-
+            		
                 // Generate a random direction
                 Direction dir = randomDirection();
 
@@ -61,7 +58,7 @@ public strictfp class RobotPlayer
                 }
 
                 // Move randomly
-                tryMove(randomDirection());
+                Movement.tryMove(randomDirection());
 
                 // Broadcast archon's location for other robots on the team to know
                 MapLocation myLocation = rc.getLocation();
@@ -103,7 +100,7 @@ public strictfp class RobotPlayer
                 }
 
                 // Move randomly
-                tryMove(randomDirection());
+                Movement.tryMove(randomDirection());
 
                 // Clock.yield() makes the robot wait until the next turn, then it will perform this loop again
                 Clock.yield();
@@ -139,7 +136,7 @@ public strictfp class RobotPlayer
                 }
 
                 // Move randomly
-                tryMove(randomDirection());
+                Movement.tryMove(randomDirection());
 
                 // Clock.yield() makes the robot wait until the next turn, then it will perform this loop again
                 Clock.yield();
@@ -177,10 +174,10 @@ public strictfp class RobotPlayer
                         MapLocation enemyLocation = robots[0].getLocation();
                         Direction toEnemy = myLocation.directionTo(enemyLocation);
 
-                        tryMove(toEnemy);
+                        Movement.tryMove(toEnemy);
                     } else {
                         // Move Randomly
-                        tryMove(randomDirection());
+                        Movement.tryMove(randomDirection());
                     }
                 }
 
@@ -202,7 +199,8 @@ public strictfp class RobotPlayer
         return new Direction((float)Math.random() * 2 * (float)Math.PI);
     }
 
-    
+
+
     /**
      * A slightly more complicated example function, this returns true if the given bullet is on a collision
      * course with the current robot. Doesn't take into account objects between the bullet and this robot.
@@ -235,7 +233,6 @@ public strictfp class RobotPlayer
 
         return (perpendicularDist <= rc.getType().bodyRadius);
     }
-    
     
     public class Tree implements Comparable<Tree>
     {
@@ -376,4 +373,5 @@ public strictfp class RobotPlayer
 		}
     	
     }
+
 }
