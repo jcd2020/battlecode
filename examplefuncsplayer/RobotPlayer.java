@@ -355,8 +355,7 @@ public strictfp class RobotPlayer {
     				break;
     			case 5:
     				totalVal = 300;
-    				break;
-    			
+    				break;   			
     		}
 		}
 		
