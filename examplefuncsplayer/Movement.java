@@ -1,7 +1,10 @@
-package examplefuncsplayer;
+package upgirdplayer;
 
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
+
+import java.util.Iterator;
+
 import battlecode.common.*;
 
 public class Movement {
@@ -108,7 +111,7 @@ public class Movement {
     		return false;
     	}
     }
-    
+    //Script to perform after sensing, broadcasting
     static boolean scoutMotion(int scoutType) throws GameActionException{
     	if(scoutType == 0){
     		if(tryMove(Direction.getEast().rotateLeftRads((float)Math.PI), 5, 3)){
@@ -132,6 +135,34 @@ public class Movement {
     	}
     }
      
-    
+    //Script to perform after sensing, broadcasting, and calculating
+    static void archonAction() throws GameActionException{
+    	if(rc.getRoundNum() == 1){
+    		if(rc.canBuildRobot(RobotType.GARDENER, Direction.EAST)){
+    			rc.buildRobot(RobotType.GARDENER, Direction.EAST);
+    		}
+    		else{rc.buildRobot(RobotType.GARDENER, Direction.WEST);}
+    	}
+    	//WHATEVER BROADCAST CHANNEL GARDENER CT IS ON, NOT 100000
+    	else if((rc.readBroadcast(100000) < 2 && rc.getTeamBullets() > 200) || 
+    			(rc.readBroadcast(100000) < 5 && rc.getTeamBullets() > 800) ||
+    			(rc.readBroadcast(100000) < 7 && rc.getTeamBullets() > 1200)){
+    		if(Math.random() > .8){
+    			if(rc.canBuildRobot(RobotType.GARDENER, Direction.EAST)){
+    				rc.buildRobot(RobotType.GARDENER, Direction.EAST);
+    			}
+    			else{rc.buildRobot(RobotType.GARDENER, Direction.WEST);}
+    		}
+    	}
+    	
+    	Iterator<RobotPlayer.Robot> itr = RobotPlayer.enemies.iterator();
+    	if(itr.hasNext()){
+    		MapLocation en = new MapLocation(itr.next().x, itr.next().y);
+    		flee(en, (int)rc.getTeamBullets(),rc.senseNearbyBullets());
+    	}
+    	else{
+    		flee(rc.getLocation().translate((float).1, 0), (int)rc.getTeamBullets(),rc.senseNearbyBullets());
+    	}
+    }
   
 }
