@@ -11,7 +11,6 @@ public class Movement {
 	
 	static RobotController rc = RobotPlayer.rc;
 	static MapLocation myLoc = rc.getLocation();
-	static final double  attackProb = .6;
 	
 	
 	  /**
@@ -103,7 +102,7 @@ public class Movement {
     	}
     	boolean fleeBool = tryMove(fleeDir, 10, 2);
     	    	
-    	if(fleeBool && bulletCt > 300 && Math.random() > 1 - attackProb && rc.canFireSingleShot()){
+    	if(fleeBool && bulletCt > 300 && Math.random() > .4 && rc.canFireSingleShot()){
     		rc.fireSingleShot(fleeDir.opposite());
     		return true;
     	}
@@ -164,5 +163,139 @@ public class Movement {
     		flee(rc.getLocation().translate((float).1, 0), (int)rc.getTeamBullets(),rc.senseNearbyBullets());
     	}
     }
+    
+    
+    //Script for gardener to perform under normal circumstances
+    //PUT IN APPROPRIATE BROADCAST CHANNELS
+    
+    //The boolean parameter is used to make sure a gardener is in 
+    //defense mode until the tree is watered
+    
+    boolean gardenerNormal(boolean isDefending) throws GameActionException{
+    	double bullets = rc.getTeamBullets();
+    	double portionProducing = (750 + 2250/Math.sqrt(rc.getRoundNum())/3000);
+    	double portionNeither = (1 - portionProducing);
+    	double choice = Math.random();
+    	
+    	if(isDefending){
+    		boolean watered = gardenerDefend();
+    		return watered;
+    	}
+    	
+    	else if(choice < portionProducing){
+    		//Always construct a scout first
+    		if(rc.readBroadcast(10000) == 0 && rc.canBuildRobot(RobotType.SCOUT, Direction.EAST)){
+    			rc.buildRobot(RobotType.SCOUT, Direction.EAST);
+    		}
+    		else if(rc.readBroadcast(10000) == 0 && rc.canBuildRobot(RobotType.SCOUT, Direction.WEST)){
+    			rc.buildRobot(RobotType.SCOUT, Direction.WEST);
+    		}
+    		else{
+    			//Randomize between building robots and trees
+    			if(Math.random() < .5){
+    				int sw = (int)Math.random() * 5;
+    				//Numbers fairly arbitrary, to be tweaked after testing
+    				
+    				switch(sw){
+    				case 0:
+    					if((rc.readBroadcast(10000) < 5 && bullets > 200) ||
+    							rc.readBroadcast(10000) < 15 && bullets > 500 || 
+    							bullets > 700){
+    						if(rc.canBuildRobot(RobotType.SOLDIER, Direction.EAST)){
+    							rc.buildRobot(RobotType.SOLDIER, Direction.EAST);
+    						}
+    						else if(rc.canBuildRobot(RobotType.SOLDIER, Direction.WEST)){
+    							rc.buildRobot(RobotType.SOLDIER, Direction.WEST);
+    						}
+    					}
+    					break;
+    					
+    				case 1: 
+    					if((rc.readBroadcast(10000) < 5 && bullets > 200) ||
+    							rc.readBroadcast(10000) < 15 && bullets > 500 || 
+    							bullets > 700){
+    						if(rc.canBuildRobot(RobotType.SOLDIER, Direction.EAST)){
+    							rc.buildRobot(RobotType.SOLDIER, Direction.EAST);
+    						}
+    						else if(rc.canBuildRobot(RobotType.SOLDIER, Direction.WEST)){
+    							rc.buildRobot(RobotType.SOLDIER, Direction.WEST);
+    						}
+    					}
+    					break;
+    					
+    				case 2: 
+    					if((rc.readBroadcast(10000) < 3 && bullets > 400) ||
+    							rc.readBroadcast(10000) < 6 && bullets > 600 || 
+    							bullets > 700){
+    						if(rc.canBuildRobot(RobotType.TANK, Direction.EAST)){
+    							rc.buildRobot(RobotType.TANK, Direction.EAST);
+    						}
+    						else if(rc.canBuildRobot(RobotType.TANK, Direction.WEST)){
+    							rc.buildRobot(RobotType.TANK, Direction.WEST);
+    						}
+    					}
+    					break;
+    					
+    				case 3:
+    					if((rc.readBroadcast(10000) < 3 && bullets > 300) ||
+    							rc.readBroadcast(10000) < 6 && bullets > 500 || 
+    							bullets > 800){
+    						if(rc.canBuildRobot(RobotType.LUMBERJACK, Direction.EAST)){
+    							rc.buildRobot(RobotType.LUMBERJACK, Direction.EAST);
+    						}
+    						else if(rc.canBuildRobot(RobotType.LUMBERJACK, Direction.WEST)){
+    							rc.buildRobot(RobotType.LUMBERJACK, Direction.WEST);
+    						}
+    					}
+    					break;
+    					
+    				case 4: 
+    					if((rc.readBroadcast(10000) < 3 && bullets > 300)){
+    						if(rc.canBuildRobot(RobotType.SCOUT, Direction.EAST)){
+    							rc.buildRobot(RobotType.SCOUT, Direction.EAST);
+    						}
+    						else if(rc.canBuildRobot(RobotType.SCOUT, Direction.WEST)){
+    							rc.buildRobot(RobotType.SCOUT, Direction.WEST);
+    						}
+    					}
+    					break;
+    					
+    				}    			
+    			}
+    			
+    			else{
+    				if(bullets > 100 && rc.canPlantTree(Direction.EAST)){
+    					rc.plantTree(Direction.EAST);
+    				}
+    				else if(bullets > 100 && rc.canPlantTree(Direction.WEST)){
+    					rc.plantTree(Direction.WEST);
+    				}
+    			}	
+    		}
+    	}
+    	// Move Randomly
+    	else if (choice > portionProducing && choice < portionProducing + portionNeither){
+    		double direction = Math.random();
+    		if(direction < .25){
+    			Movement.tryMove(Direction.EAST);
+    		}
+    		else  if(direction < .5){
+    			Movement.tryMove(Direction.WEST);
+    		}
+    		else if(direction < .75){
+    			Movement.tryMove(Direction.NORTH);
+    		}
+    		else{
+    			Movement.tryMove(Direction.SOUTH);
+    		}
+    	}
+    	
+    	//To be used as parameter for next call to this method
+		return false;
+    }
   
+    static boolean gardenerDefend(){
+    	//@todo fill stub
+    	return false;
+    }
 }

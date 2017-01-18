@@ -1,4 +1,4 @@
-package examplefuncsplayer;
+package upgirdplayer;
 import java.util.LinkedHashSet;
 
 import battlecode.common.*;
@@ -11,7 +11,7 @@ public strictfp class RobotPlayer {
     LinkedHashSet<Tree> friendlyTrees = new LinkedHashSet<>();
     LinkedHashSet<Tree> enemyTrees = new LinkedHashSet<>();
 
-    LinkedHashSet<Robot> enemies = new LinkedHashSet<>();
+    static LinkedHashSet<Robot> enemies = new LinkedHashSet<>();
     LinkedHashSet<Robot> friendlies = new LinkedHashSet<>();
 
     /**
@@ -235,6 +235,53 @@ public strictfp class RobotPlayer {
         float perpendicularDist = (float)Math.abs(distToRobot * Math.sin(theta)); // soh cah toa :)
 
         return (perpendicularDist <= rc.getType().bodyRadius);
+    }
+    
+    //Personal Confidence measure used to determine fleeing v normal behavior
+    
+    static double personalConfidence(RobotInfo[] friendlyInfo, RobotInfo[] enemyInfo, RobotInfo selfInfo) throws GameActionException{
+    
+    	double health = selfInfo.health;
+    	double bulletCt = rc.readBroadcast(6);
+    	RobotType myType = selfInfo.type;
+    	int attackPwr = 0;
+    	switch(myType){
+    	case ARCHON:	attackPwr = 0;
+    	case GARDENER:	attackPwr = 0;
+    	case LUMBERJACK: attackPwr = 1;
+    	case SOLDIER: attackPwr = 2;
+    	case TANK: attackPwr = 4;
+    	case SCOUT: attackPwr = 1;
+    	}
+    	
+    	int totalFriendlyPwr = 0;
+    	for(RobotInfo info : friendlyInfo){
+    		RobotType type = info.type;
+    		switch(type){
+        	case ARCHON:	totalFriendlyPwr += 0;
+        	case GARDENER:	totalFriendlyPwr += 0;
+        	case LUMBERJACK: totalFriendlyPwr += 1;
+        	case SOLDIER: totalFriendlyPwr += 2;
+        	case TANK: totalFriendlyPwr += 4;
+        	case SCOUT: totalFriendlyPwr += 1;
+        	}
+    	}
+    	
+    	int totalEnemyPwr = 0;
+     	for(RobotInfo info : enemyInfo){
+    		RobotType type = info.type;
+    		switch(type){
+        	case ARCHON:	totalEnemyPwr += 0;
+        	case GARDENER:	totalEnemyPwr += 0;
+        	case LUMBERJACK: totalEnemyPwr += 1;
+        	case SOLDIER: totalEnemyPwr += 2;
+        	case TANK: totalEnemyPwr += 4;
+        	case SCOUT: totalEnemyPwr += 1;
+        	}
+    	}
+     	
+     	double confidence = ((bulletCt/5) + health*attackPwr) * ((health*totalFriendlyPwr + 1)/(health*totalEnemyPwr + 1));
+    	return confidence;
     }
     
     public class Tree implements Comparable<Tree>
