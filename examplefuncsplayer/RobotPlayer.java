@@ -422,5 +422,56 @@ public strictfp class RobotPlayer {
 		}
     	
     }
+	
+	  //fudge
+    static void getGlobalConfidence() throws GameActionException
+    {
+    	double friendlyAttackingUnits = 0;
+    	double friendlyNonAttackingUnits = 0;
+
+    	for(Robot r : friendlies)
+    	{
+    		if(r.robotType <= 1 || r.robotType == 3)
+    		{
+    			friendlyNonAttackingUnits++;
+    		}
+    		else
+    		{
+    			friendlyAttackingUnits++;
+    		}
+    	}
+    	
+    	
+    	double enemyAttackingUnits = 0;
+    	double enemyNonAttackingUnits = 0;
+
+    	for(Robot r : enemies)
+    	{
+    		if(r.robotType <= 1 || r.robotType == 3)
+    		{
+    			enemyNonAttackingUnits++;
+    		}
+    		else
+    		{
+    			enemyAttackingUnits++;
+    		}
+    	}
+    	
+    	double enemyTreeCount = 50*enemyTrees.size();
+    	double friendlyTreeCount = 50*friendlyTrees.size();
+
+    	double attack = friendlyAttackingUnits/enemyAttackingUnits;
+    	double nonattack = friendlyNonAttackingUnits/enemyNonAttackingUnits;
+    	double value = friendlyTreeCount/enemyTreeCount;
+    	
+    	double enemyArchonHealth = rc.readBroadcast(8);
+    	double archonHealth = rc.readBroadcast(7);
+    	
+    	double conf = (attack*1000 + rc.getTeamBullets())*archonHealth/((nonattack*500 + value*250 + rc.getTeamVictoryPoints()*enemyArchonHealth));
+    	
+    	rc.broadcast((int) conf, 9);
+    	
+    	
+    }
 
 }
