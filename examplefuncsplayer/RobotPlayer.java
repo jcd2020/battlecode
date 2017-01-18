@@ -1,18 +1,20 @@
-package upgirdplayer;
-import java.util.LinkedHashSet;
 
+package examplefuncsplayer;
+import java.util.LinkedHashSet;
 import battlecode.common.*;
+
+
 
 public strictfp class RobotPlayer {
 	
 	static RobotController rc;
     public static final Team myTeam = rc.getTeam();
     LinkedHashSet<Tree> neutralTrees = new LinkedHashSet<>();
-    LinkedHashSet<Tree> friendlyTrees = new LinkedHashSet<>();
-    LinkedHashSet<Tree> enemyTrees = new LinkedHashSet<>();
+    static LinkedHashSet<Tree> friendlyTrees = new LinkedHashSet<>();
+    static LinkedHashSet<Tree> enemyTrees = new LinkedHashSet<>();
 
     static LinkedHashSet<Robot> enemies = new LinkedHashSet<>();
-    LinkedHashSet<Robot> friendlies = new LinkedHashSet<>();
+    static LinkedHashSet<Robot> friendlies = new LinkedHashSet<>();
 
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.

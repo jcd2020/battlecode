@@ -1,4 +1,4 @@
-package upgirdplayer;
+package examplefuncsplayer;
 
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
@@ -6,9 +6,16 @@ import battlecode.common.GameActionException;
 import java.util.Iterator;
 
 import battlecode.common.*;
+import battlecode.common.Direction;
 
 public class Movement {
 	
+	private static final int FLEEING_MIN_BULLET_THRESHOLD = 300;
+	private static final double FLEEING_RETALIATION_PROBABILITY = .4;
+	private static final float FLEEING_DEGREE_ADJUSTMENT = 10;
+	private static final double GARDENER_PRODUCTION_PROB = 0;
+	private static final int GARDENER_BC = 0;
+	private static final int INCOME_BC = 0;
 	static RobotController rc = RobotPlayer.rc;
 	static MapLocation myLoc = rc.getLocation();
 	
@@ -79,7 +86,7 @@ public class Movement {
     	
     	//Sorts to get nearest bullet
     	if(infoArray.length != 0){
-    		double min = 100;
+    		double min = Double.MAX_VALUE;
     		int index = 0;
     		for(int i = 0; i < infoArray.length; i++){
     			double dist = myLoc.distanceTo(infoArray[i].location);
@@ -93,16 +100,16 @@ public class Movement {
     		boolean notSafe = RobotPlayer.willCollideWithMe(infoArray[index]);
     		if(notSafe){
     			if(Math.random() < .5){
-    				fleeDir = fleeDir.rotateLeftDegrees(10);
+    				fleeDir = fleeDir.rotateLeftDegrees(FLEEING_DEGREE_ADJUSTMENT);
     			}
     			else{
-    				fleeDir = fleeDir.rotateRightDegrees(10);
+    				fleeDir = fleeDir.rotateRightDegrees(FLEEING_DEGREE_ADJUSTMENT);
     			}
     		}
     	}
-    	boolean fleeBool = tryMove(fleeDir, 10, 2);
+    	boolean fleeBool = tryMove(fleeDir, FLEEING_DEGREE_ADJUSTMENT, 2);
     	    	
-    	if(fleeBool && bulletCt > 300 && Math.random() > .4 && rc.canFireSingleShot()){
+    	if(fleeBool && bulletCt > FLEEING_MIN_BULLET_THRESHOLD && Math.random() > FLEEING_RETALIATION_PROBABILITY && rc.canFireSingleShot()){
     		rc.fireSingleShot(fleeDir.opposite());
     		return true;
     	}
@@ -111,46 +118,37 @@ public class Movement {
     	}
     }
     //Script to perform after sensing, broadcasting
-    static boolean scoutMotion(int scoutType) throws GameActionException{
-    	if(scoutType == 0){
-    		if(tryMove(Direction.getEast().rotateLeftRads((float)Math.PI), 5, 3)){
-    			return true;
+    static Direction scoutMotion(Direction dir) throws GameActionException{
+    	if(tryMove(dir, 5, 3) == false){
+    		if(Math.random() < .5)
+    		{
+    			dir = dir.rotateRightRads((float) (Math.PI/2));
     		}
-    		else if(tryMove(Direction.getWest().rotateLeftRads((float)Math.PI), 5, 3)){
-    			return true;
+    		else
+    		{
+    			dir = dir.rotateLeftRads((float) (Math.PI/2));
     		}
-    		else{return false;}
-    				
     	}
-    	else{
-    		if(tryMove(Direction.getEast().rotateRightRads((float)Math.PI), 5, 3)){
-    			return true;
-    		}
-    		else if(tryMove(Direction.getWest().rotateRightRads((float)Math.PI), 5, 3)){
-    			return true;
-    		}
-    		else{return false;}
-    				
-    	}
+    	return dir;
     }
      
-    //Script to perform after sensing, broadcasting, and calculating
+    //Script to perform after sensing, broadcasting, and calculatingS
     static void archonAction() throws GameActionException{
     	if(rc.getRoundNum() == 1){
-    		if(rc.canBuildRobot(RobotType.GARDENER, Direction.EAST)){
-    			rc.buildRobot(RobotType.GARDENER, Direction.EAST);
+    		if(rc.canBuildRobot(RobotType.GARDENER, Direction.getEast())){
+    			rc.buildRobot(RobotType.GARDENER, Direction.getEast());
     		}
-    		else{rc.buildRobot(RobotType.GARDENER, Direction.WEST);}
+    		else{rc.buildRobot(RobotType.GARDENER, Direction.getWest());}
     	}
     	//WHATEVER BROADCAST CHANNEL GARDENER CT IS ON, NOT 100000
-    	else if((rc.readBroadcast(100000) < 2 && rc.getTeamBullets() > 200) || 
-    			(rc.readBroadcast(100000) < 5 && rc.getTeamBullets() > 800) ||
-    			(rc.readBroadcast(100000) < 7 && rc.getTeamBullets() > 1200)){
-    		if(Math.random() > .8){
-    			if(rc.canBuildRobot(RobotType.GARDENER, Direction.EAST)){
-    				rc.buildRobot(RobotType.GARDENER, Direction.EAST);
+    	else if((rc.readBroadcast(GARDENER_BC) < 2 && rc.readBroadcast(INCOME_BC) > 25) || 
+    			(rc.readBroadcast(GARDENER_BC) < 5 && rc.readBroadcast(INCOME_BC) > 100) ||
+    			(rc.readBroadcast(GARDENER_BC) < 7 && rc.readBroadcast(INCOME_BC) > 200)){
+    		if(Math.random() < GARDENER_PRODUCTION_PROB){
+    			if(rc.canBuildRobot(RobotType.GARDENER, Direction.getEast())){
+    				rc.buildRobot(RobotType.GARDENER, Direction.getEast());
     			}
-    			else{rc.buildRobot(RobotType.GARDENER, Direction.WEST);}
+    			else{rc.buildRobot(RobotType.GARDENER, Direction.getWest());}
     		}
     	}
     	
@@ -171,29 +169,29 @@ public class Movement {
     //The boolean parameter is used to make sure a gardener is in 
     //defense mode until the tree is watered
     
-    boolean gardenerNormal(boolean isDefending) throws GameActionException{
+    boolean gardenerNormal(boolean isWatering) throws GameActionException{
     	double bullets = rc.getTeamBullets();
     	double portionProducing = (750 + 2250/Math.sqrt(rc.getRoundNum())/3000);
     	double portionNeither = (1 - portionProducing);
     	double choice = Math.random();
     	
-    	if(isDefending){
-    		boolean watered = gardenerDefend();
+    	if(isWatering){
+    		boolean watered = gardenerWatering();
     		return watered;
     	}
     	
     	else if(choice < portionProducing){
     		//Always construct a scout first
-    		if(rc.readBroadcast(10000) == 0 && rc.canBuildRobot(RobotType.SCOUT, Direction.EAST)){
-    			rc.buildRobot(RobotType.SCOUT, Direction.EAST);
+    		if(rc.readBroadcast(10000) == 0 && rc.canBuildRobot(RobotType.SCOUT, Direction.getEast())){
+    			rc.buildRobot(RobotType.SCOUT, Direction.getEast());
     		}
-    		else if(rc.readBroadcast(10000) == 0 && rc.canBuildRobot(RobotType.SCOUT, Direction.WEST)){
-    			rc.buildRobot(RobotType.SCOUT, Direction.WEST);
+    		else if(rc.readBroadcast(10000) == 0 && rc.canBuildRobot(RobotType.SCOUT, Direction.getWest())){
+    			rc.buildRobot(RobotType.SCOUT, Direction.getWest());
     		}
     		else{
     			//Randomize between building robots and trees
     			if(Math.random() < .5){
-    				int sw = (int)Math.random() * 5;
+    				int sw = (int)(Math.random() * 5);
     				//Numbers fairly arbitrary, to be tweaked after testing
     				
     				switch(sw){
@@ -201,11 +199,11 @@ public class Movement {
     					if((rc.readBroadcast(10000) < 5 && bullets > 200) ||
     							rc.readBroadcast(10000) < 15 && bullets > 500 || 
     							bullets > 700){
-    						if(rc.canBuildRobot(RobotType.SOLDIER, Direction.EAST)){
-    							rc.buildRobot(RobotType.SOLDIER, Direction.EAST);
+    						if(rc.canBuildRobot(RobotType.SOLDIER, Direction.getEast())){
+    							rc.buildRobot(RobotType.SOLDIER, Direction.getEast());
     						}
-    						else if(rc.canBuildRobot(RobotType.SOLDIER, Direction.WEST)){
-    							rc.buildRobot(RobotType.SOLDIER, Direction.WEST);
+    						else if(rc.canBuildRobot(RobotType.SOLDIER, Direction.getWest())){
+    							rc.buildRobot(RobotType.SOLDIER, Direction.getWest());
     						}
     					}
     					break;
@@ -214,11 +212,11 @@ public class Movement {
     					if((rc.readBroadcast(10000) < 5 && bullets > 200) ||
     							rc.readBroadcast(10000) < 15 && bullets > 500 || 
     							bullets > 700){
-    						if(rc.canBuildRobot(RobotType.SOLDIER, Direction.EAST)){
-    							rc.buildRobot(RobotType.SOLDIER, Direction.EAST);
+    						if(rc.canBuildRobot(RobotType.SOLDIER, Direction.getEast())){
+    							rc.buildRobot(RobotType.SOLDIER, Direction.getEast());
     						}
-    						else if(rc.canBuildRobot(RobotType.SOLDIER, Direction.WEST)){
-    							rc.buildRobot(RobotType.SOLDIER, Direction.WEST);
+    						else if(rc.canBuildRobot(RobotType.SOLDIER, Direction.getWest())){
+    							rc.buildRobot(RobotType.SOLDIER, Direction.getWest());
     						}
     					}
     					break;
@@ -227,11 +225,11 @@ public class Movement {
     					if((rc.readBroadcast(10000) < 3 && bullets > 400) ||
     							rc.readBroadcast(10000) < 6 && bullets > 600 || 
     							bullets > 700){
-    						if(rc.canBuildRobot(RobotType.TANK, Direction.EAST)){
-    							rc.buildRobot(RobotType.TANK, Direction.EAST);
+    						if(rc.canBuildRobot(RobotType.TANK, Direction.getEast())){
+    							rc.buildRobot(RobotType.TANK, Direction.getEast());
     						}
-    						else if(rc.canBuildRobot(RobotType.TANK, Direction.WEST)){
-    							rc.buildRobot(RobotType.TANK, Direction.WEST);
+    						else if(rc.canBuildRobot(RobotType.TANK, Direction.getWest())){
+    							rc.buildRobot(RobotType.TANK, Direction.getWest());
     						}
     					}
     					break;
@@ -240,22 +238,22 @@ public class Movement {
     					if((rc.readBroadcast(10000) < 3 && bullets > 300) ||
     							rc.readBroadcast(10000) < 6 && bullets > 500 || 
     							bullets > 800){
-    						if(rc.canBuildRobot(RobotType.LUMBERJACK, Direction.EAST)){
-    							rc.buildRobot(RobotType.LUMBERJACK, Direction.EAST);
+    						if(rc.canBuildRobot(RobotType.LUMBERJACK, Direction.getEast())){
+    							rc.buildRobot(RobotType.LUMBERJACK, Direction.getEast());
     						}
-    						else if(rc.canBuildRobot(RobotType.LUMBERJACK, Direction.WEST)){
-    							rc.buildRobot(RobotType.LUMBERJACK, Direction.WEST);
+    						else if(rc.canBuildRobot(RobotType.LUMBERJACK, Direction.getWest())){
+    							rc.buildRobot(RobotType.LUMBERJACK, Direction.getWest());
     						}
     					}
     					break;
     					
     				case 4: 
     					if((rc.readBroadcast(10000) < 3 && bullets > 300)){
-    						if(rc.canBuildRobot(RobotType.SCOUT, Direction.EAST)){
-    							rc.buildRobot(RobotType.SCOUT, Direction.EAST);
+    						if(rc.canBuildRobot(RobotType.SCOUT, Direction.getEast())){
+    							rc.buildRobot(RobotType.SCOUT, Direction.getEast());
     						}
-    						else if(rc.canBuildRobot(RobotType.SCOUT, Direction.WEST)){
-    							rc.buildRobot(RobotType.SCOUT, Direction.WEST);
+    						else if(rc.canBuildRobot(RobotType.SCOUT, Direction.getWest())){
+    							rc.buildRobot(RobotType.SCOUT, Direction.getWest());
     						}
     					}
     					break;
@@ -264,11 +262,11 @@ public class Movement {
     			}
     			
     			else{
-    				if(bullets > 100 && rc.canPlantTree(Direction.EAST)){
-    					rc.plantTree(Direction.EAST);
+    				if(bullets > 100 && rc.canPlantTree(Direction.getEast())){
+    					rc.plantTree(Direction.getEast());
     				}
-    				else if(bullets > 100 && rc.canPlantTree(Direction.WEST)){
-    					rc.plantTree(Direction.WEST);
+    				else if(bullets > 100 && rc.canPlantTree(Direction.getWest())){
+    					rc.plantTree(Direction.getWest());
     				}
     			}	
     		}
@@ -277,16 +275,16 @@ public class Movement {
     	else if (choice > portionProducing && choice < portionProducing + portionNeither){
     		double direction = Math.random();
     		if(direction < .25){
-    			Movement.tryMove(Direction.EAST);
+    			Movement.tryMove(Direction.getEast());
     		}
     		else  if(direction < .5){
-    			Movement.tryMove(Direction.WEST);
+    			Movement.tryMove(Direction.getWest());
     		}
     		else if(direction < .75){
-    			Movement.tryMove(Direction.NORTH);
+    			Movement.tryMove(Direction.getNorth());
     		}
     		else{
-    			Movement.tryMove(Direction.SOUTH);
+    			Movement.tryMove(Direction.getSouth());
     		}
     	}
     	
@@ -294,8 +292,11 @@ public class Movement {
 		return false;
     }
   
-    static boolean gardenerDefend(){
-    	//@todo fill stub
-    	return false;
-    }
+    private boolean gardenerWatering() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+
+	
 }
