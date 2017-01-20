@@ -428,6 +428,8 @@ public strictfp class RobotPlayer {
 	  //fudge
     static void getGlobalConfidence() throws GameActionException
     {
+    	int round = rc.getRoundNum();
+    	double fudge = Math.min(1.5 - round/1500.0, 1);
     	double friendlyAttackingUnits = 0;
     	double friendlyNonAttackingUnits = 0;
 
@@ -462,9 +464,9 @@ public strictfp class RobotPlayer {
     	double enemyTreeCount = 50*enemyTrees.size();
     	double friendlyTreeCount = 50*friendlyTrees.size();
 
-    	double attack = friendlyAttackingUnits/enemyAttackingUnits;
-    	double nonattack = friendlyNonAttackingUnits/enemyNonAttackingUnits;
-    	double value = friendlyTreeCount/enemyTreeCount;
+    	double attack = friendlyAttackingUnits/(enemyAttackingUnits*fudge);
+    	double nonattack = friendlyNonAttackingUnits/(enemyNonAttackingUnits*fudge);
+    	double value = friendlyTreeCount/(enemyTreeCount*fudge);
     	
     	double enemyArchonHealth = rc.readBroadcast(8);
     	double archonHealth = rc.readBroadcast(7);
