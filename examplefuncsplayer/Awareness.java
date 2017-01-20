@@ -14,19 +14,32 @@ public class Awareness {
 	
 	public static void sensing() throws GameActionException
 	{
+		BulletInfo[] bullet = bulletSense();
 		RobotInfo[] enemies = enemiesInSight(); //100-200
+		
+		if((bullet.length > 0 && Math.random() > .1) || enemies.length > 0)
+		{
+			switch(rc.getType().ordinal())
+			{
+				case 0:
+					Movement.flee(enemies[0].location,(int) rc.getTeamBullets(), bullet);
+					break;
+				case 1:
+					break;
+				default:
+					Movement.attack(enemies[0].location);
+					break;
+				
+			}
+		}
+		
 		TreeInfo[] neutTrees = neutTreesInSight(); //200-300
 		TreeInfo[] enemyTrees = enemyTreesInSight(); //300-400
 		TreeInfo[] friendlyTrees = friendlyTreesInSight(); //400-500
-		int friendlyTree = friendlyTreeCount(); //0
-		int vpCount = vpCount(); //1
-		int bulletCount = bulletCount(); //2
-		// enemy archon health in bc 3
 		
-		rc.broadcast(friendlyTree, FRIENDLY_TREE_COUNT);
-		rc.broadcast(vpCount, VICTORY_POINT_COUNT);
-		rc.broadcast(bulletCount, BULLET_COUNT);
-
+		
+		
+		
 		int enemy_ind = rc.readBroadcast(100);
 		int neut_ind = rc.readBroadcast(200);
 		int enemy_tree_ind = rc.readBroadcast(300);
@@ -93,6 +106,10 @@ public class Awareness {
 		
 
 	}
+	public static void updateInfo()
+    {
+    	
+    }
 	
 	private static TreeInfo[] friendlyTreesInSight() 
 	{
