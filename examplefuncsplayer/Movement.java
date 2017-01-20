@@ -1,4 +1,4 @@
-package examplefuncsplayer;
+package upgirdplayer;
 
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
@@ -6,7 +6,6 @@ import battlecode.common.GameActionException;
 import java.util.Iterator;
 
 import battlecode.common.*;
-import battlecode.common.Direction;
 
 public class Movement {
 	
@@ -292,10 +291,22 @@ public class Movement {
 		return false;
     }
   
-    private boolean gardenerWatering() {
-		// TODO Auto-generated method stub
-		return false;
+    private boolean gardenerWatering() throws GameActionException {
+    	Iterator<RobotPlayer.Tree> itr = RobotPlayer.friendlyTrees.iterator();
+    	if(itr.hasNext()){
+    		MapLocation tree = new MapLocation(itr.next().x, itr.next().y);
+    		if(rc.canInteractWithTree(tree)){
+    			rc.water(tree);
+    			return true;
+    		}
+    		else{
+    			tryMove(myLoc.directionTo(tree), 5, 1);
+    		}
+    	}
+    	return false;
 	}
+    
+    
 
 
 	
